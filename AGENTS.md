@@ -71,6 +71,57 @@ wrote or changed, not to prose you didn't touch.
 - If a conflict can't be resolved confidently, stop and report instead of
   guessing.
 
+## Logging and observability
+
+When creating an application or changing runtime behavior, include
+observability appropriate to its complexity. Follow existing project
+conventions and use the observability skill when available.
+
+### Shared infrastructure
+
+- Reuse our shared Grafana instance: [<GRAFANA_URL>](http://127.0.0.1:3013/).
+- Use our existing metrics backend: Prometheus:	127.0.0.1:9094
+- Use our existing logs backend: Loki 127.0.0.1:3101.
+- Use the shared Pushgateway for metrics from short-lived batch jobs, Pushgateway: 	127.0.0.1:9095
+
+- Do not deploy separate monitoring stacks for each application.
+- Keep endpoints and port mappings in deployment configuration.
+- Read credentials from environment variables or the existing secret manager.
+
+### Application instrumentation
+
+- Emit structured logs using the project's logging framework.
+- Include service name, environment, severity, and request or trace
+  identifiers where applicable.
+- For APIs, measure request counts, errors, and latency.
+- For background jobs, measure executions, failures, and duration.
+- Never log credentials or tokens. Follow project privacy rules for
+  user content.
+
+### Dashboards
+
+- Create or update dashboards in the shared Grafana instance.
+- Identify telemetry by application and environment.
+- Keep dashboard definitions and provisioning configuration in version
+  control where supported.
+
+### LLM applications
+
+- Use Langfuse for LLM tracing.
+- Configure its endpoint and credentials through environment variables.
+- Trace model calls and relevant retrieval or tool steps.
+- Capture model name, latency, token usage, and cost when available.
+- Make prompt and response capture configurable and follow project
+  privacy rules.
+
+### Verification
+
+- Generate a representative request or job execution.
+- Verify that the expected logs, metrics, and applicable LLM traces arrive.
+- Report what was verified and any unavailable integrations.
+- Configure telemetry failures so they do not fail user requests unless
+  the project explicitly requires otherwise.
+
 ## Completing a task that ships
 
 1. Keep changes limited to the assigned task.
@@ -89,6 +140,24 @@ wrote or changed, not to prose you didn't touch.
 
 Do not merge the PR unless explicitly instructed. Keep the worktree until
 the PR is merged or closed.
+
+
+## AI and document-processing services
+
+- Use the existing Ollama service for local LLM inference.
+- Use the existing OCR and embedding services when required.
+- Reuse the project's existing clients and integration patterns.
+- Read endpoints and model names from configuration:
+  - OLLAMA_BASE_URL=http://localhost:11436
+  - CHUNKING_URL=http://localhost:8085
+  - OLLAMA_MODEL=qwen3:14b
+  - OCR_BASE_URL=http://127.0.0.1:8084
+  - EMBEDDING_MODEL=http://127.0.0.1:8089/embed
+  
+- Verify connectivity before running integration checks.
+- Report unavailable services; do not silently substitute another provider.
+- Preserve compatibility between embedding models and existing indexes.
+  Changing the embedding model may require reindexing.
 
 ## Checks in this repo
 
